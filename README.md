@@ -1,82 +1,36 @@
 # Project Management Dashboard
 
-A modern web application for project management with role-based access control, team management, and real-time collaboration features.
+A modern project management dashboard built with React, TypeScript, and Supabase.
 
 ## Features
 
-- 🔐 Authentication and Authorization
-- 👥 Team Management
-- 📊 Dashboard Overview
-- 💬 Real-time Chat
-- 📝 Document Management
-- 📅 Project Calendar
-- 📈 Analytics
-- 🔒 Security Settings
+- User authentication and authorization
+- Team management
+- Project tracking
+- Task management
+- Real-time updates
+- Responsive design
 
-## Tech Stack
+## Getting Started
 
-- React
-- TypeScript
-- Tailwind CSS
-- Supabase (Backend & Authentication)
-- React Router
-- Lucide Icons
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Create a `.env` file with your Supabase credentials
+4. Start the development server: `npm run dev`
 
-## Prerequisites
+## CI/CD Status
 
-- Node.js (v14 or higher)
-- npm or yarn
-- Supabase account
-
-## Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
-
-```env
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-## Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd project-bolt
-```
-
-2. Install dependencies:
-```bash
-npm install
-# or
-yarn install
-```
-
-3. Start the development server:
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-## Project Structure
-
-```
-src/
-├── components/     # Reusable UI components
-├── pages/         # Page components
-├── services/      # API and service integrations
-├── types/         # TypeScript type definitions
-└── utils/         # Utility functions
-```
+This project uses GitHub Actions for continuous integration and deployment:
+- CI: Runs tests and builds the project on every push and pull request
+- CD: Deploys to GitHub Pages on successful builds to the main branch
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
 
 ## License
 
