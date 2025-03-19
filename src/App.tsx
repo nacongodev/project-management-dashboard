@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { Dashboard } from './pages/Dashboard';
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { Profile } from './pages/Profile';
 import { Team } from './pages/Team';
+import { Landing } from './pages/Landing';
+import { EmailConfirmation } from './pages/EmailConfirmation';
 import { authService } from './services/auth';
+import { User } from './types/auth';
 
 // Protected route wrapper component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -16,8 +20,9 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   React.useEffect(() => {
     const checkAuth = async () => {
       try {
-        const currentUser = await authService.getCurrentUser();
-        setUser(currentUser);
+        const { user, error } = await authService.getCurrentUser();
+        if (error) throw error;
+        setUser(user);
       } catch (error) {
         console.error('Error checking auth:', error);
       } finally {
@@ -51,8 +56,9 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   React.useEffect(() => {
     const checkAuth = async () => {
       try {
-        const currentUser = await authService.getCurrentUser();
-        setUser(currentUser);
+        const { user, error } = await authService.getCurrentUser();
+        if (error) throw error;
+        setUser(user);
       } catch (error) {
         console.error('Error checking auth:', error);
       } finally {
@@ -81,7 +87,34 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 export const App: React.FC = () => {
   return (
     <Router>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4aed88',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ff4b4b',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       <Routes>
+        {/* Landing page */}
+        <Route path="/" element={<Landing />} />
+
         {/* Public routes */}
         <Route
           path="/login"
@@ -106,6 +139,10 @@ export const App: React.FC = () => {
               <ForgotPassword />
             </PublicRoute>
           }
+        />
+        <Route
+          path="/auth/confirm"
+          element={<EmailConfirmation />}
         />
 
         {/* Protected routes */}
@@ -133,9 +170,6 @@ export const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
-
-        {/* Redirect root to dashboard */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>
   );

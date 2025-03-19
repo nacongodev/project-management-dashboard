@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { User, UserRole } from '../types';
+import { User, UserRole, SignUpCredentials } from '../types/auth';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -18,7 +18,17 @@ export const authService = {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message === 'Email not confirmed') {
+          // If email is not confirmed, try to resend the confirmation email
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email,
+          });
+          if (resendError) throw resendError;
+        }
+        throw error;
+      }
 
       const user = data.user as User;
       return { user, error: null };
@@ -27,14 +37,15 @@ export const authService = {
     }
   },
 
-  async signUp(email: string, password: string, role: UserRole = 'member'): Promise<{ user: User | null; error: Error | null }> {
+  async signUp(credentials: SignUpCredentials): Promise<{ user: User | null; error: Error | null }> {
     try {
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: credentials.email,
+        password: credentials.password,
         options: {
           data: {
-            role,
+            full_name: credentials.full_name,
+            role: credentials.role || 'member',
           },
         },
       });
@@ -60,8 +71,18 @@ export const authService = {
 
   async getCurrentUser(): Promise<{ user: User | null; error: Error | null }> {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) throw error;
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) throw sessionError;
+      
+      if (!session) {
+        return { user: null, error: null };
+      }
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) throw userError;
+      
       return { user: user as User, error: null };
     } catch (error) {
       return { user: null, error: error as Error };
@@ -106,6 +127,41 @@ export const authService = {
     }
   },
 
+  async resendConfirmationEmail(email: string): Promise<{ error: Error | null }> {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      });
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  },
+
+  // Handle email confirmation and automatic login
+  async handleEmailConfirmation(): Promise<{ user: User | null; error: Error | null }> {
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) throw sessionError;
+      
+      if (!session) {
+        return { user: null, error: new Error('No active session found') };
+      }
+
+      // If we have a session, the user is already logged in after email confirmation
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) throw userError;
+      
+      return { user: user as User, error: null };
+    } catch (error) {
+      return { user: null, error: error as Error };
+    }
+  },
+
   // Role-based access control
   hasPermission(user: User | null, requiredRole: UserRole): boolean {
     if (!user) return false;
@@ -116,7 +172,8 @@ export const authService = {
       'member': 1,
     };
 
-    return roleHierarchy[user.role] >= roleHierarchy[requiredRole];
+    const userRole = user.role as UserRole;
+    return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
   },
 
   // Subscribe to auth state changes

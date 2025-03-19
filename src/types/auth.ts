@@ -1,22 +1,17 @@
+import { User as SupabaseUser } from '@supabase/supabase-js';
+
 export type UserRole = 'project_manager' | 'team_lead' | 'member';
 
-export interface User {
-  id: string;
-  email: string;
-  role: UserRole;
+export interface User extends SupabaseUser {
   full_name: string;
-  avatar_url?: string;
-  created_at: string;
-  updated_at: string;
-  last_sign_in?: string;
-  status: 'active' | 'inactive' | 'suspended';
+  status: 'active' | 'inactive' | 'pending';
   permissions: string[];
 }
 
 export interface AuthState {
   user: User | null;
   loading: boolean;
-  error: Error | null;
+  error: string | null;
 }
 
 export interface LoginCredentials {
@@ -33,9 +28,10 @@ export interface SignUpCredentials {
 
 export interface UserProfile {
   full_name?: string;
-  avatar_url?: string;
   role?: UserRole;
-  status?: 'active' | 'inactive' | 'suspended';
+  status?: 'active' | 'inactive' | 'pending';
+  avatar_url?: string;
+  permissions?: string[];
 }
 
 export interface PasswordReset {
